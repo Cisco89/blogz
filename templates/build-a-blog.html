@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div id="title_align">
+        <h1>The Blog</h1>
+    </div>
+
+    <hr />
+
+    {% if blog_posts|length == 0 %}
+    <p>No Blog Posts Yet</p>
+    {% else %}
+
+        <ul>
+            {% for post in blog_posts %}
+            <h4>{{post.title}}</h4>
+            
+            <p>
+                {{post.body}}
+            </p>
+                <form method="POST" action="" style="display:inline-block;">
+                    <input type="hidden" name="blog-post-id" value="{{post.id}}" />
+                    <input type="submit" value="Mark Read!" title="Don't show this here again" />
+                </form>
+            
+            </li>
+            {% endfor %}
+        </ul>
+
+    {% endif %}
+
+    <hr />
+
+    <div id="title_align"><h2>Read Posts</h2></div>
+
+    <ul>
+        {% for post in flaged_posts %}
+            <h4>{{post.title}}</h4>
+            <hr />
+            <p>
+                {{post.body}}
+            </p>
+        {% endfor %}
+    </ul>
+
+{% endblock %}
