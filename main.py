@@ -15,12 +15,10 @@ class Blog(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(120))
     body = db.Column(db.String(1000))
-    flag = db.Column(db.Boolean)
 
     def __init__(self, title, body):
         self.title = title
         self.body = body
-        self.flag = False
 
 @app.route('/', methods=['POST', 'GET'])
 def index():
@@ -28,19 +26,16 @@ def index():
     if request.method == 'POST':
         blog_post_id = int(request.form['blog-post-id'])
         blog_post = Blog.query.get(blog_post_id)
-        blog_post.flag = True
         db.session.add(blog_post)
         db.session.commit()
         return redirect('/')    
 
-    blog_posts = Blog.query.filter_by(flag=False).all()
-    flaged_posts = Blog.query.filter_by(flag=True).all() 
+    blog_posts = Blog.query.all()
 
     return render_template(
         'build-a-blog.html', 
         title='Telling it on a Mountain!', 
         blog_posts=blog_posts,
-        flaged_posts=flaged_posts,
         )
 
 @app.route('/The-Mountain', methods=['POST', 'GET'])
@@ -49,14 +44,34 @@ def add_blog_post():
     if request.method == 'POST':
         title = request.form['title']
         body = request.form['blog_post']
+        post = {'title': title, 'body':body}
         new_post = Blog(title,body)
         db.session.add(new_post)
         db.session.commit()
-        return redirect('/')
+        return render_template(
+            'blog-post.html',
+            post=post,
+        )
 
     return render_template(
         'the-mountain.html',
         title='The Mountain!'
+    )
+
+@app.route('/post', methods=['POST', 'GET'])
+def display_post():
+
+    post = []
+
+    if request.method == 'POST':
+        title = request.form['title']
+        post = Blog.query.filter_by(title=title).first()
+    # post = Blog.query.get(post_id)
+    # print(post)
+
+    return render_template(
+        'blog-post.html',
+        post=post[0],
     )
 
 if __name__ == '__main__':
