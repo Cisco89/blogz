@@ -1,21 +1,31 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h1>Tell it on a Mountain!</h1>
-    <form method='post'>
-        <label>
-            <h3>New Post</h3>
-            <hr />
-            Title
-            <input type="text" name='title' />
-            <br />
-            <br />
-            Say what you want to say!
-            <br />
-            <textarea name="blog_post"></textarea>
-            <hr />
-        </label>
-        <input type="submit" value='Blog That Shit!' />
-    </form>
+    <div id="title_align">
+        <h1>The Mountain</h1>
+    </div>
+
+    <hr />
+
+    {% if blog_posts|length == 0 %}
+    <p>No Blog Posts Yet</p>
+    {% else %}
+
+        <ul>
+            {% for post in blog_posts %}
+            
+                <p>{{post.id}}</p> 
+
+                <a href="/I-said-it!?id={{post.id}}"><h4>{{post.title}}</h4></a>
+            
+                <p>{{post.body}}</p>
+
+            </form>
+            
+            </li>
+            {% endfor %}
+        </ul>
+
+    {% endif %}
 
 {% endblock %}

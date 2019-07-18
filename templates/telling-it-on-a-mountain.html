@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>Tell it on a Mountain!</h1>
+    <form method='post'>
+        <label>
+            <h3>New Post</h3>
+            <hr />
+            Title
+            <input type="text" name='title' />
+            <br />
+            <br />
+            Say what you want to say!
+            <br />
+            <textarea name="blog_post"></textarea>
+            <hr />
+        </label>
+        <input type="submit" value='Blog That Shit!' />
+    </form>
+
+{% endblock %}

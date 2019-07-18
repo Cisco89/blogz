@@ -20,7 +20,7 @@ class Blog(db.Model):
         self.title = title
         self.body = body
 
-@app.route('/', methods=['POST', 'GET'])
+@app.route('/The-Mountain', methods=['POST', 'GET'])
 def index():
 
     if request.method == 'POST':
@@ -28,17 +28,17 @@ def index():
         blog_post = Blog.query.get(blog_post_id)
         db.session.add(blog_post)
         db.session.commit()
-        return redirect('/')    
+        return redirect('/The-Mountain')    
 
     blog_posts = Blog.query.all()
 
     return render_template(
-        'build-a-blog.html', 
-        title='Telling it on a Mountain!', 
+        'the-mountain.html', 
+        title='The Mountain!', 
         blog_posts=blog_posts,
         )
 
-@app.route('/The-Mountain', methods=['POST', 'GET'])
+@app.route('/Go-Tell-It-On-A-Mountain', methods=['POST', 'GET'])
 def add_blog_post():
 
     if request.method == 'POST':
@@ -49,29 +49,26 @@ def add_blog_post():
         db.session.add(new_post)
         db.session.commit()
         return render_template(
-            'blog-post.html',
+            'i-said-it.html',
+            title='I said it!',
             post=post,
         )
 
     return render_template(
-        'the-mountain.html',
-        title='The Mountain!'
+        'telling-it-on-a-mountain.html',
+        title='Go Tell it on a Mountain!'
     )
 
-@app.route('/post', methods=['POST', 'GET'])
+@app.route('/I-said-it!')
 def display_post():
 
-    post = []
-
-    if request.method == 'POST':
-        title = request.form['title']
-        post = Blog.query.filter_by(title=title).first()
-    # post = Blog.query.get(post_id)
-    # print(post)
+    post_id = request.args.get('id')
+    post = Blog.query.get(post_id)
 
     return render_template(
-        'blog-post.html',
-        post=post[0],
+        'i-said-it.html',
+        title='I said it!',
+        post=post
     )
 
 if __name__ == '__main__':
