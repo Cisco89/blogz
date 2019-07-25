@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template,redirect, session
+from flask import Flask, request, render_template,redirect, session, flash
 from flask_sqlalchemy import SQLAlchemy
 import os
 
@@ -7,6 +7,7 @@ app.config['DEBUG'] = True
 project_dir = os.path.dirname(os.path.abspath(__file__))
 app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///{}".format(os.path.join(project_dir, "blogz.db"))
 app.config['SQLALCHEMY_ECHO'] = True
+app.secret_key = '|_|ber!337'
 
 db = SQLAlchemy(app)
 
@@ -66,8 +67,10 @@ def add_blog_post():
     if request.method == 'POST':
         title = request.form['title']
         body = request.form['blog_post']
+        # .first() probably not necessary, will ask later
+        user = User.query.filter_by(username=session['username']).first()
         post = {'title': title, 'body':body}
-        new_post = Blog(title,body)
+        new_post = Blog(title,body, user)
         db.session.add(new_post)
         db.session.commit()
         return render_template(
@@ -107,7 +110,7 @@ def login():
             flash('Logged in')
             session['username'] = username
 
-            return redirect('/ ') 
+            return redirect('/The-Mountain') 
 
         if not user:
 
@@ -136,20 +139,20 @@ def register():
             db.session.commit()
             session['username'] = username
 
-            return redirect('/')
+            return redirect('/The-Mountain')
 
         if existing_user:
-            flash('Duplicate User', 'error')
+            flash('Duplicate User, please select another username', 'error')
 
         if not existing_user and password != verify:
-            flash('Passwords do not match!', 'error')
+            flash('Passwords did not match!', 'error')
 
-    return render_template('register.html')
+    return render_template('signup.html')
 
 @app.route('/logout')
 def logout():
     del session['username']
-    return redirect('/')
+    return redirect('/The-Mountain')
 
 if __name__ == '__main__':
     app.run()
