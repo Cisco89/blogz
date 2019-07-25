@@ -1,11 +1,11 @@
-from flask import Flask, request, render_template,redirect
+from flask import Flask, request, render_template,redirect, session
 from flask_sqlalchemy import SQLAlchemy
 import os
 
 app = Flask(__name__)
 app.config['DEBUG'] = True
 project_dir = os.path.dirname(os.path.abspath(__file__))
-app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///{}".format(os.path.join(project_dir, "build-a-blog.db"))
+app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///{}".format(os.path.join(project_dir, "blogz.db"))
 app.config['SQLALCHEMY_ECHO'] = True
 
 db = SQLAlchemy(app)
@@ -15,10 +15,32 @@ class Blog(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(120))
     body = db.Column(db.String(1000))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
-    def __init__(self, title, body):
+    def __init__(self, title, body, user):
         self.title = title
         self.body = body
+        self.user = user
+
+class User(db.Model):
+
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(60))
+    password = db.Column(db.String(120))
+    blogs = db.relationship('Blog', backref='user')
+
+    def __init__(self, username, password):
+
+        self.username = username
+        self.password = password
+
+@app.before_request
+def require_login():
+    
+    allowed_routes = ['login', 'register']
+
+    if request.endpoint not in allowed_routes and 'username' not in session:
+        return redirect('/login')
 
 @app.route('/The-Mountain', methods=['POST', 'GET'])
 def index():
@@ -70,6 +92,64 @@ def display_post():
         title='I said it!',
         post=post
     )
+
+@app.route('/login', methods=['POST', 'GET'])
+def login():
+
+    if request.method == 'POST':
+
+        username = request.form['username']
+        password = request.form['password']
+        user = User.query.filter_by(username=username).first()
+
+        if user and user.password == password:
+
+            flash('Logged in')
+            session['username'] = username
+
+            return redirect('/ ') 
+
+        if not user:
+
+            flash('User does not exist', 'error')
+
+        if  user and user.password != password:
+
+            flash('Password does not match user', 'error')   
+
+    return render_template('login.html')
+
+@app.route('/register', methods=['POST', 'GET'])
+def register():
+
+    if request.method == 'POST':
+
+        username = request.form['username']
+        password = request.form['password']
+        verify = request.form['verify']
+
+        existing_user = User.query.filter_by(username=username).first()
+
+        if not existing_user and password == verify:
+
+            db.session.add(User(username, password))
+            db.session.commit()
+            session['username'] = username
+
+            return redirect('/')
+
+        if existing_user:
+            flash('Duplicate User', 'error')
+
+        if not existing_user and password != verify:
+            flash('Passwords do not match!', 'error')
+
+    return render_template('register.html')
+
+@app.route('/logout')
+def logout():
+    del session['username']
+    return redirect('/')
 
 if __name__ == '__main__':
     app.run()
